@@ -19,9 +19,22 @@ const svgRemove = `
         />
     </svg>`;
 
+const inputData = {
+    value: getElementByName('value'),
+    dateEnd: getElementByName('dateEnd'),
+    disposable: getElementByName('disposable'),
+    restaurantId: getElementByName('restaurantId'),
+    extraId: getElementByName('extraId'),
+}
+
+const restaurants = [];
+const extras = [];
+
+let modifyType = "";
+let selectedId = "null";
 
 async function getRequest(url, params) {
-    const urlParams =  new URLSearchParams(params && { });
+    const urlParams =  new URLSearchParams(params || { });
     const newUrl = url + '?' + urlParams;
 
     const response = await fetch(newUrl);
@@ -30,40 +43,140 @@ async function getRequest(url, params) {
     return json;
 }
 
-function fillContent() {
-    getRequest("content.php", {})
-        .then(response => {
-            const table = document.querySelector('.content-rows');
+async function deleteRequest(url, params) {
+    const urlParams =  new URLSearchParams(params || { });
+    const newUrl = url + '?' + urlParams;
 
-            response.forEach(el => {
-                table.innerHTML += `
-                <tr class="clickable">
-                <td>${el.VALUE}</td>
-                <td>${el.DATE_END}</td>
-                <td>${el.DISPOSABLE ? 'Да' : 'Нет'}</td>
-                <td>${el.RESTAURANT_NAME}</td>
-                <td>${el.EXTRA_NAME}</td>
-                <td onclick="console.log('works')">${svgRemove}</td>
-                </tr>`;
-            });
-        });
-}
-
-function resetInputContent() {
-
-}
-
-async function handleClick() {
-    const res = await getRequest("content.php", {
-        foo: 1,
-        bar: "fee"
+    const response = await fetch(newUrl, {
+        method: "DELETE",
     });
 
-    console.log(res);
+    const json = await response.json();
+
+    return json;
 }
 
 async function postRequest(url, params) {
+    const urlParams =  new URLSearchParams(params || { });
+    const newUrl = url + '?' + urlParams;
+    const response = await fetch(newUrl, {
+        method: "POST",
+    });
 
+    const json = await response.json();
+    return json;
+}
+
+async function removeContent(id) {
+    const conf = confirm('Вы действительно хотите удалить запись?');
+
+    if(conf) {
+        const res = await deleteRequest("content.php", {
+            ID: id
+        });
+
+        if (res.ERROR) {
+            alert(res.ERROR);
+            return;
+        } 
+
+        await fetchContent();
+        hideInputData();
+    }
+}
+
+async function postContent() {
+    const data = getContentInputData();
+    const body = {
+        ID: selectedId,
+        TYPE: modifyType,
+        ...data
+    }
+    console.log(body);
+    const res = await postRequest("content.php", body);
+
+    if (res.ERROR) {
+        alert(res.ERROR);
+        return;
+    }
+    
+    fetchContent();
+}
+
+
+function selectContent(id, row) {
+    selectedId = id;
+    modifyType = "edit";
+    const rowVal = JSON.parse(row.getAttribute("row"));
+    row.classList.add('row-selected');
+
+    inputData.value.value = rowVal.VALUE;
+    inputData.dateEnd.value = rowVal.DATE_END;
+    inputData.disposable.checked = rowVal.DISPOSABLE;
+    inputData.extraId.value = rowVal.EXTRA_ID;
+    inputData.restaurantId.value = rowVal.RESTAURANT_ID;
+
+    setInputModifyType("edit");
+    showInputData();
+}
+
+async function fetchContent() {
+    const table = document.querySelector('.content-rows');
+    table.innerHTML = "";
+
+    await getRequest("content.php", {})
+    .then(response => {
+        console.log(response);
+        response.forEach(el => {
+            table.innerHTML += `
+            <tr class="clickable" onclick="selectContent(${el.ID}, this);"row='${JSON.stringify(el)}'>
+            <td>${el.VALUE}</td>
+            <td>${el.DATE_END}</td>
+            <td>${el.DISPOSABLE ? 'Да' : 'Нет'}</td>
+            <td>${el.RESTAURANT_NAME}</td>
+            <td>${el.EXTRA_NAME || ''}</td>
+            <td onclick="removeContent(${el.ID})">${svgRemove}</td>
+            </tr>`;
+        });
+    });
+} 
+
+function fillContent() {
+    fetchContent();
+
+    getRequest("content.php", {
+            GET_TYPE: 'RESTAURANTS',
+        }).then(response => {
+            const restSelect = inputData.restaurantId;
+
+            restSelect.innerHTML += `<option value="null" selected>Не выбран</option>`;
+
+            response.forEach(el => {
+                restSelect.innerHTML += `<option value="${el.ID}">${el.NAME}</option>`
+            });
+        });
+
+    getRequest("content.php", {
+        GET_TYPE: 'EXTRAS',
+    }).then(response => {
+        const extraSelect = inputData.extraId;
+
+        extraSelect.innerHTML += `<option value="null" selected>Не выбран</option>`;
+
+        response.forEach(el => {
+            extraSelect.innerHTML += `<option value="${el.ID}">${el.NAME}</option>`
+        });
+    });
+}
+
+function resetInputContent() {
+    inputData.value.value = "";
+    inputData.dateEnd.value = "";
+    inputData.extraId.value = "null";
+    inputData.restaurantId.value = "null";
+    inputData.disposable.value = false;
+
+    console.log(inputData);
 }
 
 function hideInputData() {
@@ -84,8 +197,20 @@ function showInputData() {
     }
 }
 
+function setInputModifyType(type) {
+    if (type === "edit") {
+        document.querySelector(".content-editor-panel a").innerHTML = "Изменение записи";
+        document.querySelector("button[name='addEditBtn']").innerHTML = "Изменить";
+        modifyType = "edit";
+    } else {
+        document.querySelector(".content-editor-panel a").innerHTML = "Добавление записи";
+        document.querySelector("button[name='addEditBtn']").innerHTML = "Добавить";
+        modifyType = "add";
+    }
+}
+
 function getElementByName(name) {
-    content = document.querySelector(`input[name="${name}"]`);
+    content = document.querySelector(`[name="${name}"]`);
 
     return content;
 }
@@ -93,7 +218,7 @@ function getElementByName(name) {
 function getContentInputData() {
     const value = getElementByName('value').value;
     const dateEnd = getElementByName('dateEnd').value;
-    const disposable = getElementByName('disposable').value;
+    const disposable = getElementByName('disposable').checked;
     const restaurantId = getElementByName('restaurantId').value;
     const extraId = getElementByName('extraId').value;
 
@@ -104,8 +229,6 @@ function getContentInputData() {
         EXTRA_ID: extraId,
         RESTAURANT_ID: restaurantId
     }
-
-    console.log(obj);
 
     return obj;
 }

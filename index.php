@@ -78,13 +78,13 @@ if (!array_key_exists('IS_AUTH', $_SESSION)) {
                             <select type="text" name="extraId"></select>
                             <br>
                             <div style="text-align: right;">
-                                <button class="input-btn" onclick="hideInputData()">Отмена</button>
-                                <button class="input-btn" name="addEditBtn" onclick="handleClick()">Добавить</button>
+                                <button class="input-btn" onclick="hideInputData();">Отмена</button>
+                                <button class="input-btn" name="addEditBtn" onclick="postContent();">Добавить</button>
                             </div>
                         </div>
                     </div>
                     <div class="content-editor-add">
-                        <button class="input-btn" onclick="showInputData()">Добавить</button>
+                        <button class="input-btn" onclick="resetInputContent();showInputData();setInputModifyType('add');">Добавить</button>
                     </div>
                 </div>
             </div>

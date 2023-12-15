@@ -257,3 +257,7 @@ tbody .clickable:hover {
 .content-rows tr td:nth-child(6) {
     text-align: center;
 }
+
+.row-selected {
+    background: rgb(16, 250, 153);
+}

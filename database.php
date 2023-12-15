@@ -20,4 +20,12 @@ function execute_query($sql, $params = [], $fetch_all = false) {
 
     return $result;
 }
+
+function execute_query_dml($sql, $params = []) {
+    $dsn = "pgsql:host=localhost;port=5432;dbname=restaurant;";
+    $pdo = new PDO($dsn, 'postgres', '123');
+    $stmt = $pdo->prepare($sql);
+
+    return $stmt->execute($params);
+}
 ?>
