@@ -103,11 +103,20 @@ async function postContent() {
     fetchContent();
 }
 
+function disableSelection() {
+    const children = document.querySelector('.content-rows').children;
+
+    for(let i = 0; i < children.length; i++) {
+        children[i].classList.remove('row-selected');
+    }
+}
 
 function selectContent(id, row) {
     selectedId = id;
     modifyType = "edit";
     const rowVal = JSON.parse(row.getAttribute("row"));
+
+    disableSelection();
     row.classList.add('row-selected');
 
     inputData.value.value = rowVal.VALUE;
@@ -175,8 +184,6 @@ function resetInputContent() {
     inputData.extraId.value = "null";
     inputData.restaurantId.value = "null";
     inputData.disposable.value = false;
-
-    console.log(inputData);
 }
 
 function hideInputData() {
@@ -187,6 +194,7 @@ function hideInputData() {
     }
 
     resetInputContent();
+    disableSelection();
 }
 
 function showInputData() {

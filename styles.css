@@ -259,5 +259,5 @@ tbody .clickable:hover {
 }
 
 .row-selected {
-    background: rgb(16, 250, 153);
+    background: rgb(16, 250, 153) !important;
 }
