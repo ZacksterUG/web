@@ -1,8 +1,10 @@
 <?php
 session_start();
+
+// Проверка наличия ключа 'IS_AUTH' в пользовательской сессии
 if (array_key_exists('IS_AUTH', $_SESSION)) {
-    header('Location: index.php');
-    die();
+    header('Location: index.php'); // Перенаправление на главную страницу, если пользователь уже авторизован
+    die(); // Прекращение выполнения скрипта
 }
 ?>
 <meta charset="utf-8" />

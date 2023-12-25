@@ -1,3 +1,4 @@
+// SVG-иконка для удаления записи
 const svgRemove = `
     <svg
         width="24"
@@ -19,20 +20,26 @@ const svgRemove = `
         />
     </svg>`;
 
+// Объект с элементами ввода данных
 const inputData = {
-    value: getElementByName('value'),
-    dateEnd: getElementByName('dateEnd'),
-    disposable: getElementByName('disposable'),
-    restaurantId: getElementByName('restaurantId'),
-    extraId: getElementByName('extraId'),
-}
+    value: getElementByName('value'),      // Получение значения
+    dateEnd: getElementByName('dateEnd'),  // Получение даты окончания
+    disposable: getElementByName('disposable'),  // Получение признака одноразовости
+    restaurantId: getElementByName('restaurantId'),  // Получение идентификатора ресторана
+    extraId: getElementByName('extraId'),  // Получение идентификатора дополнительных элементов
+};
 
-const restaurants = [];
-const extras = [];
+// Массивы для хранения ресторанов и дополнительных элементов
+const restaurants = []; // Массив для хранения ресторанов
+const extras = []; // Массив для хранения дополнительных элементов
 
-let modifyType = "";
-let selectedId = "null";
+// Тип модификации (добавление или изменение) и выбранный идентификатор
+let modifyType = ""; // Тип модификации
+let selectedId = "null"; // Выбранный идентификатор
 
+// Асинхронные функции запросов к серверу
+
+// GET запрос
 async function getRequest(url, params) {
     const urlParams =  new URLSearchParams(params || { });
     const newUrl = url + '?' + urlParams;
@@ -43,6 +50,7 @@ async function getRequest(url, params) {
     return json;
 }
 
+// DELETE запрос
 async function deleteRequest(url, params) {
     const urlParams =  new URLSearchParams(params || { });
     const newUrl = url + '?' + urlParams;
@@ -56,6 +64,7 @@ async function deleteRequest(url, params) {
     return json;
 }
 
+// POST запрос
 async function postRequest(url, params) {
     const urlParams =  new URLSearchParams(params || { });
     const newUrl = url + '?' + urlParams;
@@ -67,6 +76,7 @@ async function postRequest(url, params) {
     return json;
 }
 
+// Функция удаления контента
 async function removeContent(id) {
     const conf = confirm('Вы действительно хотите удалить запись?');
 
@@ -78,13 +88,14 @@ async function removeContent(id) {
         if (res.ERROR) {
             alert(res.ERROR);
             return;
-        } 
+        }
 
         await fetchContent();
         hideInputData();
     }
 }
 
+// Функция отправки данных контента на сервер
 async function postContent() {
     const data = getContentInputData();
     const body = {
@@ -99,10 +110,11 @@ async function postContent() {
         alert(res.ERROR);
         return;
     }
-    
+
     fetchContent();
 }
 
+// Снятие выделения с выбранной записи
 function disableSelection() {
     const children = document.querySelector('.content-rows').children;
 
@@ -111,6 +123,7 @@ function disableSelection() {
     }
 }
 
+// Выбор контента для редактирования/просмотра
 function selectContent(id, row) {
     selectedId = id;
     modifyType = "edit";
@@ -129,6 +142,7 @@ function selectContent(id, row) {
     showInputData();
 }
 
+// Получение и отображение контента
 async function fetchContent() {
     const table = document.querySelector('.content-rows');
     table.innerHTML = "";
@@ -137,19 +151,20 @@ async function fetchContent() {
     .then(response => {
         console.log(response);
         response.forEach(el => {
-            table.innerHTML += `
-            <tr class="clickable" onclick="selectContent(${el.ID}, this);"row='${JSON.stringify(el)}'>
+            table.innerHTML += 
+            <tr class="clickable" onclick="selectContent(${el.ID}, this);" row='${JSON.stringify(el)}'>
             <td>${el.VALUE}</td>
             <td>${el.DATE_END}</td>
             <td>${el.DISPOSABLE ? 'Да' : 'Нет'}</td>
             <td>${el.RESTAURANT_NAME}</td>
             <td>${el.EXTRA_NAME || ''}</td>
             <td onclick="removeContent(${el.ID})">${svgRemove}</td>
-            </tr>`;
+            </tr>;
         });
     });
-} 
+}
 
+// Заполнение списка ресторанов и дополнительных элементов
 function fillContent() {
     fetchContent();
 
@@ -158,10 +173,10 @@ function fillContent() {
         }).then(response => {
             const restSelect = inputData.restaurantId;
 
-            restSelect.innerHTML += `<option value="null" selected>Не выбран</option>`;
+            restSelect.innerHTML += <option value="null" selected>Не выбран</option>;
 
             response.forEach(el => {
-                restSelect.innerHTML += `<option value="${el.ID}">${el.NAME}</option>`
+                restSelect.innerHTML += <option value="${el.ID}">${el.NAME}</option>;
             });
         });
 
@@ -170,14 +185,15 @@ function fillContent() {
     }).then(response => {
         const extraSelect = inputData.extraId;
 
-        extraSelect.innerHTML += `<option value="null" selected>Не выбран</option>`;
+        extraSelect.innerHTML += <option value="null" selected>Не выбран</option>;
 
         response.forEach(el => {
-            extraSelect.innerHTML += `<option value="${el.ID}">${el.NAME}</option>`
+            extraSelect.innerHTML += <option value="${el.ID}">${el.NAME}</option>;
         });
     });
 }
 
+// Сброс введенных данных
 function resetInputContent() {
     inputData.value.value = "";
     inputData.dateEnd.value = "";
@@ -186,6 +202,7 @@ function resetInputContent() {
     inputData.disposable.value = false;
 }
 
+// Скрытие данных ввода контента
 function hideInputData() {
     const elements = document.querySelector('.content-editor-panel').children;
 
@@ -197,6 +214,7 @@ function hideInputData() {
     disableSelection();
 }
 
+// Отображение данных ввода контента
 function showInputData() {
     const elements = document.querySelector('.content-editor-panel').children;
 
@@ -205,6 +223,7 @@ function showInputData() {
     }
 }
 
+// Установка типа модификации (добавление или изменение)
 function setInputModifyType(type) {
     if (type === "edit") {
         document.querySelector(".content-editor-panel a").innerHTML = "Изменение записи";
@@ -217,12 +236,14 @@ function setInputModifyType(type) {
     }
 }
 
+// Получение HTML-элемента по имени
 function getElementByName(name) {
-    content = document.querySelector(`[name="${name}"]`);
+    content = document.querySelector([name="${name}"]);
 
     return content;
 }
 
+// Получение данных ввода контента
 function getContentInputData() {
     const value = getElementByName('value').value;
     const dateEnd = getElementByName('dateEnd').value;
@@ -236,10 +257,11 @@ function getContentInputData() {
         DISPOSABLE: disposable,
         EXTRA_ID: extraId,
         RESTAURANT_ID: restaurantId
-    }
+    };
 
     return obj;
 }
 
+// Заполнение контента и скрытие данных ввода при загрузке страницы
 fillContent();
 hideInputData();

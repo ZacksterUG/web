@@ -1,9 +1,10 @@
 <?php
-session_start();
+// Начало новой пользовательской сессии для работы с сеансом пользователя
 
+// Проверка наличия ключа 'IS_AUTH' в пользовательской сессии
 if (array_key_exists('IS_AUTH', $_SESSION)) {
-    session_destroy();
-    header('Location: authorization.php');
-    die();
+    session_destroy(); // Уничтожение текущей пользовательской сессии
+    header('Location: authorization.php'); // Перенаправление на страницу авторизации
+    die(); // Прекращение выполнения скрипта
 }
 ?>

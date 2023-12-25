@@ -4,18 +4,18 @@ function execute_query($sql, $params = [], $fetch_all = false) {
     $pdo = new PDO($dsn, 'postgres', '123');
     $stmt = $pdo->prepare($sql);
 
-    if(count($params) > 0) {
+    if (count($params) > 0) {
         foreach ($params as $key => $value) {
-            $stmt->bindValue("$key", $value);
+            $stmt->bindValue(":$key", $value); // Связывание параметров запроса с их значениями
         }
     }
 
-    $stmt->execute();
+    $stmt->execute(); // Выполнение подготовленного запроса
 
     if ($fetch_all) {
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC); // Возврат всех строк результата запроса в виде массива ассоциативных массивов
     } else {
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC); // Возврат одной строки результата запроса в виде ассоциативного массива
     }
 
     return $result;
@@ -26,6 +26,6 @@ function execute_query_dml($sql, $params = []) {
     $pdo = new PDO($dsn, 'postgres', '123');
     $stmt = $pdo->prepare($sql);
 
-    return $stmt->execute($params);
+    return $stmt->execute($params); // Выполнение подготовленного запроса с передачей параметров
 }
 ?>

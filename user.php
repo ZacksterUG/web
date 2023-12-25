@@ -1,11 +1,12 @@
 <?php
 function get_users() {
-    session_start();
+    session_start(); // Начало сессии для работы с пользовательской сессией
 
-    if (!array_key_exists('IS_AUTH', $_SESSION)
-        || !(has_role($_SESSION['user_id'], 'ADM') 
-             || has_role($_SESSION['user_id'], 'STAT'))) {
-        return null;
+    // Проверка наличия ключа 'IS_AUTH' в пользовательской сессии и наличия определенных ролей у текущего пользователя
+    if (!array_key_exists('IS_AUTH', $_SESSION) ||
+        !(has_role($_SESSION['user_id'], 'ADM') ||
+          has_role($_SESSION['user_id'], 'STAT'))) {
+        return null; // Если текущий пользователь не авторизован или не обладает требуемыми ролями, возвращается null
     }
 
     $sql = '
@@ -19,9 +20,9 @@ function get_users() {
         order by u."NAME"
     ';
 
-    $users = execute_query($sql, [], true);
+    $users = execute_query($sql, [], true); // Выполнение запроса для извлечения списка пользователей
 
-    return $users;
+    return $users; // Возврат списка пользователей
 }
 
 ?>
